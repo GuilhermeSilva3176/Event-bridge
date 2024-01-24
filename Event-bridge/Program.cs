@@ -19,10 +19,12 @@ builder.Services.AddDbContext<AppDbContext>(option =>
         new MySqlServerVersion(new Version(8, 0, 34)));
 });
 
-
-// Dependencia hash
-
+// Dependencia hash.
 builder.Services.AddScoped<IPasswordServices, PasswordServices>();
+
+// Configuração de Tokens.
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddScoped<ITokenServices, TokenServices>();
 
 var app = builder.Build();
 
