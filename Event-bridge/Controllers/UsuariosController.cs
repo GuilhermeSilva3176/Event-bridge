@@ -2,7 +2,6 @@
 using Event_bridge.Interfaces;
 using Event_bridge.Model;
 using Event_bridge.Model.DTOs.Usuario;
-using Event_bridge.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -16,7 +15,8 @@ public class UsuariosController : ControllerBase
     private readonly AppDbContext _Db;
     private readonly IPasswordServices _PasswordService;
     private readonly ITokenServices _TokenService;
-    public UsuariosController(AppDbContext db, IPasswordServices passwordService, ITokenServices tokenServices)
+    public UsuariosController(AppDbContext db, IPasswordServices passwordService,
+        ITokenServices tokenServices)
     {
         _Db = db;
         _PasswordService = passwordService;
@@ -50,7 +50,7 @@ public class UsuariosController : ControllerBase
         var usuario = _Db.Usuarios.FirstOrDefault(u => u.Email == dto.Email);
 
         if (usuario == null || !_PasswordService.VerificarSenha(dto.Senha, usuario.Senha))
-            return BadRequest("Credênciais inválidas.");
+            return BadRequest(new { mensagem = "Credênciais inválidas ou usuário não existe." });
 
         var token = _TokenService.GerarToken(usuario);
         return Ok(new { Token = token });
@@ -63,8 +63,8 @@ public class UsuariosController : ControllerBase
         var userEmail = User.FindFirst(ClaimTypes.Email)!.Value;
         var usuario = _Db.Usuarios.FirstOrDefault(u => u.Email == userEmail);
 
-        if (usuario == null || !_PasswordService.VerificarSenha(dto.Senha,usuario.Senha))
-            return BadRequest("Credênciais inválidas");
+        if (usuario == null || !_PasswordService.VerificarSenha(dto.Senha, usuario.Senha))
+            return BadRequest(new { mensagem = "Credênciais inválidas ou usuário não existe." });
 
         _Db.Usuarios.Remove(usuario);
         _Db.SaveChanges();
