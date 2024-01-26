@@ -24,8 +24,7 @@ public class EventosController : ControllerBase
     [HttpPost("Criar")]
     public async Task<IActionResult> Criar([FromBody] CriarEventosDto dto)
     {
-        var usuarioEmail = User.FindFirst(ClaimTypes.Email)!.Value;
-        var usuario = _Db.Usuarios.FirstOrDefault(u => u.Email == usuarioEmail);
+        var usuario = _Token.GetUserByToken(User);
         var evento = new EventosModel
         {
             IdUsuario = usuario.Id,
@@ -39,20 +38,34 @@ public class EventosController : ControllerBase
         await _Db.SaveChangesAsync();
         return Ok("Evento criado com sucesso.");
     }
-    [Authorize]
-    [HttpGet("Eventos")]
-    public IActionResult GetEventos()
-    {
 
-    }
     [Authorize]
-    [HttpPost("Remarcar")]
-    public IActionResult RemarcarEvento([FromBody] RemarcaEventosDto dto)
+    [HttpGet("GetEventos")]
+    public IActionResult GetEventos()
+    {        
+        var usuario = _Token.GetUserByToken(User);
+        var eventosUsuario = _Db.Eventos.Where(e => e.IdUsuario == usuario.Id).ToList();
+
+        return Ok(eventosUsuario);
+    }
+
+    [Authorize]
+    [HttpPost("Editar")]
+    public IActionResult EditarEvento([FromBody] EditarEventosDto dto)
     {
-        var usuarioEmail = User.FindFirst(ClaimTypes.Email)!.Value;
-        var usuario = _Db.Usuarios.FirstOrDefault(u => u.Email == usuarioEmail);
+        var usuario = _Token.GetUserByToken(User);
+        var evento = _Db.Eventos.FirstOrDefault(e => e.Id == dto.Id);
+
+        if (evento == null || usuario.Id != evento.IdUsuario)
+            return Unauthorized("Acesso negado.");  
+
+        evento.DataInicio = dto.NovaDataInicio;
+        evento.DataFim = dto.NovaDataFim;
+        evento.Titulo = dto.Titulo;
+        evento.Descricao = dto.Descricao;
         
-           
+        _Db.SaveChanges();
+        return Ok("Evento editado com sucesso.");
     }
 }
 

@@ -1,4 +1,5 @@
-﻿using Event_bridge.Interfaces;
+﻿using Event_bridge.Data;
+using Event_bridge.Interfaces;
 using Event_bridge.Model;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,10 +11,12 @@ namespace Event_bridge.Services;
 public class TokenServices : ITokenServices
 {
     private readonly IConfiguration _Configuration;
+    private readonly AppDbContext _Db;
 
-    public TokenServices(IConfiguration configuration)
+    public TokenServices(IConfiguration configuration, AppDbContext db)
     {
         _Configuration = configuration;
+        _Db = db;
     }
 
     public string GerarToken(UsuariosModel usuario)
@@ -32,5 +35,11 @@ public class TokenServices : ITokenServices
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
+    }
+
+    public UsuariosModel GetUserByToken(ClaimsPrincipal user)
+    {
+        var usuarioEmail = user.FindFirst(ClaimTypes.Email)!.Value;
+        return _Db.Usuarios.FirstOrDefault(u => u.Email == usuarioEmail)!;        
     }
 }

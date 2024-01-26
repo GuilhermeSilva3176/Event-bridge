@@ -13,4 +13,5 @@ public class UsuariosModel
     public DateTime CriadoEm { get; set; }
 
     public DateTime AltualizadoEm { get; set; }
+
 }

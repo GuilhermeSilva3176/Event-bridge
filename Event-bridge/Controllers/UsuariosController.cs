@@ -14,13 +14,13 @@ public class UsuariosController : ControllerBase
 {
     private readonly AppDbContext _Db;
     private readonly IPasswordServices _PasswordService;
-    private readonly ITokenServices _TokenService;
+    private readonly ITokenServices _Token;
     public UsuariosController(AppDbContext db, IPasswordServices passwordService,
-        ITokenServices tokenServices)
+        ITokenServices token)
     {
         _Db = db;
         _PasswordService = passwordService;
-        _TokenService = tokenServices;
+        _Token = token;
     }
 
     [HttpPost("Registrar")]
@@ -52,7 +52,7 @@ public class UsuariosController : ControllerBase
         if (usuario == null || !_PasswordService.VerificarSenha(dto.Senha, usuario.Senha))
             return BadRequest(new { mensagem = "Credênciais inválidas ou usuário não existe." });
 
-        var token = _TokenService.GerarToken(usuario);
+        var token = _Token.GerarToken(usuario);
         return Ok(new { Token = token });
     }
 
@@ -60,8 +60,7 @@ public class UsuariosController : ControllerBase
     [HttpDelete("Delete")]
     public IActionResult Deletar([FromBody] DeletarDto dto)
     {
-        var userEmail = User.FindFirst(ClaimTypes.Email)!.Value;
-        var usuario = _Db.Usuarios.FirstOrDefault(u => u.Email == userEmail);
+        var usuario = _Token.GetUserByToken(User);
 
         if (usuario == null || !_PasswordService.VerificarSenha(dto.Senha, usuario.Senha))
             return BadRequest(new { mensagem = "Credênciais inválidas ou usuário não existe." });
@@ -76,8 +75,7 @@ public class UsuariosController : ControllerBase
     [HttpPost("AlterarSenha")]
     public IActionResult AlterarSenha([FromBody] AlterarSenhaDto dto)
     {
-        var userEmail = User.FindFirst(ClaimTypes.Email)!.Value;
-        var usuario = _Db.Usuarios.FirstOrDefault(u => u.Email == userEmail);
+        var usuario = _Token.GetUserByToken(User);
 
         if (!_PasswordService.VerificarSenha(dto.SenhaAtual, usuario.Senha))
             return BadRequest("Credênciais inválidas");
