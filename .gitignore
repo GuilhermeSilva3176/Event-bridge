@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /Event-bridge/appsettings.json
 /Event-bridge/appsettings.json
+/Event-bridge/appsettings.Development.json
