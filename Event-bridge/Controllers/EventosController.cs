@@ -67,5 +67,21 @@ public class EventosController : ControllerBase
         _Db.SaveChanges();
         return Ok("Evento editado com sucesso.");
     }
+
+    [Authorize]
+    [HttpDelete("Delete")]
+    public IActionResult DeletarEvento([FromBody] DeletarEventosDto dto) 
+    {
+        var usuario = _Token.GetUserByToken(User);
+        var evento = _Db.Eventos.FirstOrDefault(e => e.Id == dto.IdUsuario);
+
+        if (evento == null || usuario.Id != evento.IdUsuario)
+            return Unauthorized("Acesso negado.");
+
+        _Db.Remove(evento);
+        _Db.SaveChanges();
+
+        return Ok("Evento Deletado Com sucesso.");
+    }
 }
 

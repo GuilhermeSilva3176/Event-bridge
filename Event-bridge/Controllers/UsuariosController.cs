@@ -44,8 +44,8 @@ public class UsuariosController : ControllerBase
         return Ok("Usuário registrado com sucesso!");
     }
 
-    [HttpPost("Login")]
-    public IActionResult Login([FromBody] LoginDto dto)
+    [HttpGet("Login")]
+    public IActionResult Login([FromQuery] LoginDto dto)
     {
         var usuario = _Db.Usuarios.FirstOrDefault(u => u.Email == dto.Email);
 
